@@ -11,6 +11,7 @@ import {
   Plus,
   Table2,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type {} from '@tiptap/extension-code-block';
 import type {} from '@tiptap/extension-horizontal-rule';
 import type {} from '@tiptap/extension-image';
@@ -21,17 +22,10 @@ interface BlockInsertMenuProps {
   editor: Editor;
 }
 
+const TABLE_ROWS = 6;
+const TABLE_COLS = 7;
+
 const INSERT_ITEMS = [
-  {
-    label: 'Table',
-    icon: Table2,
-    action: (editor: Editor) =>
-      editor
-        .chain()
-        .focus()
-        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-        .run(),
-  },
   {
     label: 'Image',
     icon: ImageIcon,
@@ -80,6 +74,12 @@ const INSERT_ITEMS = [
 
 export function BlockInsertMenu({ editor }: BlockInsertMenuProps) {
   const [open, setOpen] = useState(false);
+  const [hoveredTableSize, setHoveredTableSize] = useState({ rows: 1, cols: 1 });
+
+  const insertTable = (rows: number, cols: number) => {
+    setOpen(false);
+    editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
+  };
 
   return (
     <FloatingMenu
@@ -121,7 +121,7 @@ export function BlockInsertMenu({ editor }: BlockInsertMenuProps) {
               onMouseDown={() => setOpen(false)}
             />
             <div
-              className="absolute left-0 top-6 z-50 w-44 rounded-[10px] p-1.5"
+              className="absolute left-0 top-6 z-50 w-[264px] rounded-[10px] p-2"
               style={{
                 background: 'rgba(255,255,255,0.92)',
                 backdropFilter: 'blur(20px)',
@@ -129,21 +129,68 @@ export function BlockInsertMenu({ editor }: BlockInsertMenuProps) {
                 boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
               }}
             >
-              {INSERT_ITEMS.map(({ label, icon: Icon, action }) => (
+              <div className="px-1 pb-2">
+                <p className="mb-2 text-sm font-semibold text-gray-900">Insert Table</p>
+                <div
+                  className="grid gap-1"
+                  style={{ gridTemplateColumns: `repeat(${TABLE_COLS}, minmax(0, 1fr))` }}
+                >
+                  {Array.from({ length: TABLE_ROWS }).map((_, rowIndex) =>
+                    Array.from({ length: TABLE_COLS }).map((__, colIndex) => {
+                      const row = rowIndex + 1;
+                      const col = colIndex + 1;
+                      const isSelected =
+                        row <= hoveredTableSize.rows && col <= hoveredTableSize.cols;
+
+                      return (
+                        <button
+                          key={`${row}-${col}`}
+                          type="button"
+                          onMouseEnter={() => setHoveredTableSize({ rows: row, cols: col })}
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            insertTable(row, col);
+                          }}
+                          className={cn(
+                            'h-8 rounded-sm border border-black/15 transition-colors',
+                            isSelected ? 'bg-stone-300' : 'bg-white',
+                          )}
+                          title={`${row} x ${col}`}
+                        />
+                      );
+                    }),
+                  )}
+                </div>
                 <button
-                  key={label}
                   type="button"
                   onMouseDown={(event) => {
                     event.preventDefault();
-                    setOpen(false);
-                    action(editor);
+                    insertTable(hoveredTableSize.rows, hoveredTableSize.cols);
                   }}
-                  className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-sm text-gray-700 transition-colors hover:bg-white/60"
+                  className="mt-2 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-gray-700 hover:bg-white/60"
                 >
-                  <Icon size={14} className="flex-shrink-0 text-gray-400" />
-                  {label}
+                  <Table2 size={14} className="text-gray-500" />
+                  Insert Table {hoveredTableSize.rows} x {hoveredTableSize.cols}
                 </button>
-              ))}
+              </div>
+
+              <div className="border-t border-black/[0.08] pt-1">
+                {INSERT_ITEMS.map(({ label, icon: Icon, action }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      setOpen(false);
+                      action(editor);
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-sm text-gray-700 transition-colors hover:bg-white/60"
+                  >
+                    <Icon size={14} className="flex-shrink-0 text-gray-400" />
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </>
         )}

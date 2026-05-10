@@ -35,7 +35,16 @@ export function Rail() {
           );
         })}
       </div>
-      <button className="p-3 text-gray-500 hover:bg-white/20 rounded-xl transition-colors mt-auto">
+      <button
+        type="button"
+        onClick={() => setActivePillar('settings')}
+        className={`p-3 rounded-xl transition-all duration-200 mt-auto ${
+          activePillar === 'settings'
+            ? 'bg-white/40 shadow-sm text-gray-900'
+            : 'text-gray-500 hover:bg-white/20 hover:text-gray-700'
+        }`}
+        title="Settings"
+      >
         <Settings size={20} />
       </button>
     </nav>

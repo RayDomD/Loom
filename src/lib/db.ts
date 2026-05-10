@@ -22,9 +22,19 @@ export type Note = {
   updatedAt: string;
 };
 
+export type Macro = {
+  id: string;
+  label: string;
+  trigger: 'double-tab';
+  action: 'insert-1x1-table';
+  enabled: boolean;
+  updatedAt: string;
+};
+
 class LoomDatabase extends Dexie {
   folders!: Table<Folder, string>;
   notes!: Table<Note, string>;
+  macros!: Table<Macro, string>;
 
   constructor() {
     super("loom");
@@ -32,6 +42,12 @@ class LoomDatabase extends Dexie {
     this.version(1).stores({
       folders: "id, parentId, depth, updatedAt",
       notes: "id, folderId, isPinned, updatedAt",
+    });
+
+    this.version(2).stores({
+      folders: "id, parentId, depth, updatedAt",
+      notes: "id, folderId, isPinned, updatedAt",
+      macros: "id, trigger, action, enabled, updatedAt",
     });
   }
 }
