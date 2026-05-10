@@ -7,9 +7,9 @@
 :root {
   --background: #F0EDE8;
   --foreground: #2C2C2C;
-  --rail-bg: rgba(255, 255, 255, 0.42);
-  --panel-bg: rgba(255, 255, 255, 0.46);
-  --main-bg: rgba(255, 255, 255, 0.35);
+  --rail-bg: rgba(210, 200, 190, 0.55);
+  --panel-bg: rgba(218, 210, 202, 0.60);
+  --main-bg: rgba(255, 255, 255, 0.52);
   --toolbar-bg: rgba(255, 255, 255, 0.60);
   --card-bg: rgba(255, 255, 255, 0.62);
   --float-bg: rgba(255, 255, 255, 0.78);
@@ -173,10 +173,68 @@ body {
   @apply bg-black/[0.05] p-4 rounded-lg overflow-x-auto my-2;
 }
 .tiptap-editor pre code { @apply bg-transparent p-0; }
-.tiptap-editor table { @apply border-collapse w-full my-2 text-sm; }
+.tiptap-editor .tableWrapper {
+  @apply my-2 rounded-lg;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+}
+.tiptap-editor .tableWrapper::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    rgba(178, 163, 152, 0.55) 50%
+  );
+  border-top: 1px solid rgba(178, 163, 152, 0.30);
+  border-left: 1px solid rgba(178, 163, 152, 0.30);
+  border-bottom-right-radius: 6px;
+  pointer-events: none;
+  cursor: ew-resize;
+}
+.tiptap-editor table {
+  @apply border-collapse text-sm;
+  table-layout: fixed;
+  width: 100%;
+  min-width: 120px;
+}
 .tiptap-editor th,
-.tiptap-editor td { @apply border border-black/10 px-3 py-2 text-left; }
+.tiptap-editor td {
+  @apply border border-black/10 px-2 py-1 text-left;
+  min-width: 48px;
+  width: auto;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  vertical-align: top;
+}
+.tiptap-editor th > *,
+.tiptap-editor td > * {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 .tiptap-editor th { @apply bg-black/[0.04] font-semibold; }
+.tiptap-editor .column-resize-handle {
+  bottom: -2px;
+  pointer-events: none;
+  position: absolute;
+  right: -2px;
+  top: 0;
+  width: 4px;
+  background-color: rgba(99, 102, 241, 0.35);
+}
+.tiptap-editor.resize-cursor,
+.tiptap-editor .resize-cursor {
+  cursor: ew-resize;
+}
 .tiptap-editor img { @apply max-w-full rounded-lg my-2; }
 .tiptap-editor hr { @apply my-4 border-t border-gray-200; }
 
@@ -185,6 +243,10 @@ body {
 .tiptap-editor ul[data-type="taskList"] li { @apply flex items-start gap-2 my-1; }
 .tiptap-editor ul[data-type="taskList"] li > label { @apply flex-shrink-0 mt-[3px]; }
 .tiptap-editor ul[data-type="taskList"] li > div { @apply flex-1; }
+
+/* Hide scrollbar track while keeping scroll functional */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* Placeholder */
 .tiptap-editor p.is-empty:first-child::before {

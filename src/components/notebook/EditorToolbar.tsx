@@ -1,19 +1,22 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { type Editor } from '@tiptap/react';
 import {
   Bold,
   Code,
+  Highlighter,
   Italic,
   Link2,
   Strikethrough,
   Underline,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type {} from '@tiptap/extension-bold';
 import type {} from '@tiptap/extension-code';
 import type {} from '@tiptap/extension-heading';
+import type {} from '@tiptap/extension-highlight';
 import type {} from '@tiptap/extension-italic';
 import type {} from '@tiptap/extension-link';
 import type {} from '@tiptap/extension-strike';
@@ -29,6 +32,14 @@ interface ToolbarButtonProps {
   title: string;
   children: ReactNode;
 }
+
+const HIGHLIGHT_COLORS = [
+  { name: 'Yellow', value: '#fde047' },
+  { name: 'Peach', value: '#fed7aa' },
+  { name: 'Pink', value: '#fecaca' },
+  { name: 'Lavender', value: '#e9d5ff' },
+  { name: 'Mint', value: '#bbf7d0' },
+];
 
 function ToolbarButton({
   onClick,
@@ -60,6 +71,9 @@ function Divider() {
 }
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
+  const [lastHighlightColor, setLastHighlightColor] = useState('#fde047');
+  const [isHighlightOpen, setIsHighlightOpen] = useState(false);
+
   if (!editor) {
     return null;
   }
@@ -78,6 +92,11 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     }
 
     editor.chain().focus().setLink({ href: url }).run();
+  };
+
+  const applyHighlight = (color: string) => {
+    setLastHighlightColor(color);
+    editor.chain().focus().toggleHighlight({ color }).run();
   };
 
   return (
@@ -157,6 +176,82 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       >
         <Code size={14} />
       </ToolbarButton>
+
+      <Divider />
+
+      <div className="relative flex items-center">
+        <button
+          type="button"
+          onMouseDown={(event) => {
+            event.preventDefault();
+            applyHighlight(lastHighlightColor);
+          }}
+          title="Highlight"
+          className="relative flex items-center justify-center rounded-md p-1.5 text-gray-600 transition-colors hover:bg-white/40"
+        >
+          <Highlighter size={14} />
+          <span
+            className="absolute bottom-0.5 h-0.5 w-3 rounded-full"
+            style={{ backgroundColor: lastHighlightColor }}
+          />
+        </button>
+        <button
+          type="button"
+          onMouseDown={(event) => {
+            event.preventDefault();
+            setIsHighlightOpen((open) => !open);
+          }}
+          title="Highlight colors"
+          className="rounded-md px-1 py-1.5 text-[10px] leading-none text-gray-500 hover:bg-white/40"
+        >
+          v
+        </button>
+
+        {isHighlightOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-40"
+              onMouseDown={() => setIsHighlightOpen(false)}
+            />
+            <div
+              className="absolute left-0 top-8 z-50 flex items-center gap-1 rounded-[10px] p-1.5"
+              style={{
+                background: 'rgba(255,255,255,0.92)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(0,0,0,0.08)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+              }}
+            >
+              {HIGHLIGHT_COLORS.map((color) => (
+                <button
+                  key={color.value}
+                  type="button"
+                  title={color.name}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    setIsHighlightOpen(false);
+                    applyHighlight(color.value);
+                  }}
+                  className="h-5 w-5 rounded-full border border-black/10"
+                  style={{ backgroundColor: color.value }}
+                />
+              ))}
+              <button
+                type="button"
+                title="Clear highlight"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  setIsHighlightOpen(false);
+                  editor.chain().focus().unsetHighlight().run();
+                }}
+                className="flex h-5 w-5 items-center justify-center rounded-full border border-black/10 bg-white text-gray-500"
+              >
+                <X size={11} />
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
